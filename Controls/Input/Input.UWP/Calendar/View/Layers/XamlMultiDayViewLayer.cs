@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Telerik.Core;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Telerik.UI.Xaml.Controls.Input.Calendar
 {
@@ -99,6 +101,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             this.scrollViewer.TopHeader = this.topHeader;
             this.scrollViewer.LeftHeader = this.leftHeaderPanel;
             this.scrollViewer.TopLeftHeader = this.topLeftHeaderPanel;
+            this.scrollViewer.AllowDrop = true;
 
             this.realizedTimerRulerItemsPresenters = new Dictionary<CalendarTimeRulerItem, TextBlock>();
             this.realizedTimerRulerLinePresenters = new Dictionary<CalendarGridLine, Border>();
@@ -712,6 +715,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             this.scrollViewer.RemoveHandler(UIElement.PointerMovedEvent, new PointerEventHandler(this.OnScrollViewerPointerMoved));
             this.scrollViewer.RemoveHandler(UIElement.PointerExitedEvent, new PointerEventHandler(this.OnScrollViewerPointerExitedEvent));
             this.scrollViewer.RemoveHandler(UIElement.PointerEnteredEvent, new PointerEventHandler(this.OnScrollViewerPointerEnteredEvent));
+            this.scrollViewer.RemoveHandler(UIElement.DropEvent, new DragEventHandler(this.OnScrollViewerDropEvent));
+            this.scrollViewer.RemoveHandler(UIElement.DragOverEvent, new DragEventHandler(this.OnScrollViewerDragOverEvent));
 
             this.scrollViewer.ManipulationCompleted -= this.OnScrollViewerManipulationCompleted;
 
@@ -730,6 +735,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             this.scrollViewer.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(this.OnScrollViewerPointerMoved), true);
             this.scrollViewer.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(this.OnScrollViewerPointerExitedEvent), true);
             this.scrollViewer.AddHandler(UIElement.PointerEnteredEvent, new PointerEventHandler(this.OnScrollViewerPointerEnteredEvent), true);
+            this.scrollViewer.AddHandler(UIElement.DropEvent, new DragEventHandler(this.OnScrollViewerDropEvent), true);
+            this.scrollViewer.AddHandler(UIElement.DragOverEvent, new DragEventHandler(this.OnScrollViewerDragOverEvent), true);
 
             this.scrollViewer.ManipulationCompleted += this.OnScrollViewerManipulationCompleted;
 
@@ -738,6 +745,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                 this.offsetStoryboard.Completed += this.OnOffsetStoryboardCompleted;
             }
         }
+      
 
         protected internal override void AddVisualChild(UIElement child)
         {
@@ -1064,14 +1072,44 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         private AppointmentControl CreateDefaultAppointmentVisual()
         {
             AppointmentControl appointmentControl = new AppointmentControl();
+            appointmentControl.CanDrag = true;
+            appointmentControl.DragStarting += AppointmentControl_DragStarting;
             appointmentControl.calendar = this.Owner;
             this.AddVisualChild(appointmentControl);
 
             return appointmentControl;
         }
 
-        private SlotControl CreateSlotVisual()
+        private void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            AppointmentControl appControl = (AppointmentControl)sender;
+            CalendarAppointmentInfo appInfo = appControl.appointmentInfo;
+            if (appInfo != null)
+            {
+                var initialDragPoint = args.GetPosition(appControl);
+                args.Data.Properties.Add("AppointmentInfo", appInfo);
+
+                var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
+                initialDragPoint.Y /= scale;
+                initialDragPoint.X /= scale;
+                args.Data.Properties.Add("HitPoint", initialDragPoint);
+
+                //args.AllowedOperations = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
+                //var renderTargetBitmap = new RenderTargetBitmap();
+                //await renderTargetBitmap.RenderAsync(appControl);
+
+                //var buffer = await renderTargetBitmap.GetPixelsAsync();
+                //var bitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer,
+                //    BitmapPixelFormat.Bgra8,
+                //    renderTargetBitmap.PixelWidth,
+                //    renderTargetBitmap.PixelHeight,
+                //    BitmapAlphaMode.Premultiplied);
+                //args.DragUI.SetContentFromSoftwareBitmap(bitmap);
+            }
+        }
+
+        private SlotControl CreateSlotVisual()
+        { 
             SlotControl slot = new SlotControl();
             this.AddVisualChild(slot);
 
@@ -1117,6 +1155,39 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         private void OnScrollViewerPointerEnteredEvent(object sender, PointerRoutedEventArgs e)
         {
             this.isPointerInsideScrollViewer = true;
+        }
+
+        private void OnScrollViewerDropEvent(object sender, DragEventArgs e)
+        {
+            var properties = e.DataView.Properties;
+            object info;
+            object hitPoint;
+            if (properties.TryGetValue("AppointmentInfo", out info) && properties.TryGetValue("HitPoint", out hitPoint))
+            {
+                var droppedPosition = e.GetPosition(this.contentPanel);
+                var pointFromAppointment = (Point)hitPoint;
+                droppedPosition.Y -= pointFromAppointment.Y;
+                var hitTestService = this.Owner.hitTestService;
+                var dateTime = hitTestService.GetDateTimeFromPoint(droppedPosition);
+                var dateTimeAppointment = ((CalendarAppointmentInfo)info).childAppointment as DateTimeAppointment;
+                if (dateTime.HasValue && dateTimeAppointment != null)
+                {
+                    var startDate = dateTime.Value;
+                    var appointmentInfo = (CalendarAppointmentInfo)info;
+                    var appDuration = appointmentInfo.ChildAppointment.EndDate - appointmentInfo.ChildAppointment.StartDate;
+
+                    dateTimeAppointment.StartDate = startDate;
+                    dateTimeAppointment.EndDate = startDate.AddMilliseconds(appDuration.TotalMilliseconds);
+                }
+            }
+        }
+
+        private void OnScrollViewerDragOverEvent(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
+            // Check if needed
+            e.DragUIOverride.IsCaptionVisible = false;
+            e.DragUIOverride.IsGlyphVisible = false;
         }
 
         private void OnScrollViewerManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)

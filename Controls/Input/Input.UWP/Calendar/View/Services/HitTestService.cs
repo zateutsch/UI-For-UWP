@@ -125,6 +125,33 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             return new TimeSlotTapContext(startDate, endDate, exactStartDate, exactEndDate, isReadOnly);
         }
 
+        internal DateTime? GetDateTimeFromPoint(Point hitPoint)
+        {
+            var calendar = this.Owner;
+            var model = calendar.Model;
+
+            var calendarTimeRulerItems = model.multiDayViewModel.timeRulerItems;
+            var cellModels = model.CalendarCells;
+
+            var halfTextHeight = model.multiDayViewModel.halfTextHeight;
+            var thickness = calendar.GridLinesThickness;
+            var timeRulerItem = HitTestService.GetTimeRulerItemFromPoint(hitPoint, calendarTimeRulerItems, halfTextHeight, thickness);
+            if (timeRulerItem == null)
+            {
+                return null;
+            }
+
+            var calendarCellIndex = HitTestService.GetCellIndexFromPoint(hitPoint, cellModels);
+            var multiDayViewSettings = calendar.MultiDayViewSettings;
+            var visibleDays = multiDayViewSettings.VisibleDays;
+            var realIndex = calendarCellIndex + visibleDays;
+            var calendarCell = cellModels[realIndex];
+
+            var exactTime = GetExactTimeFromPoint(hitPoint, timeRulerItem, halfTextHeight, thickness);
+            return calendarCell.Date.AddMilliseconds(exactTime.TotalMilliseconds);
+
+        }
+
         private static bool IsDateBetweenRange(DateTime date, DateTime start, DateTime end)
         {
             if (date < start)

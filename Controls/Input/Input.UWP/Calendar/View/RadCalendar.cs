@@ -315,6 +315,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         internal readonly VisualStateService VisualStateService;
         internal readonly SelectionService SelectionService;
         internal readonly CurrencyService CurrencyService;
+        internal readonly HitTestService hitTestService;
 
         internal XamlVisualStateLayer visualStateLayer;
         internal XamlDecorationLayer decorationLayer;
@@ -341,8 +342,6 @@ namespace Telerik.UI.Xaml.Controls.Input
 
         private const string CalendarViewHostPartName = "PART_CalendarViewHost";
         private const string NavigationControlPanelName = "navigationControl";
-
-        private readonly HitTestService hitTestService;
         private readonly InputService inputService;
         private CommandService commandService;
 
