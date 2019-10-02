@@ -127,12 +127,54 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             base.DetachUI(parent);
             this.allDayAreaScrollViewer.ViewChanged -= this.OnAllDayAreaScrollViewerViewChanged;
+            this.allDayAreaScrollViewer.RemoveHandler(UIElement.DropEvent, new DragEventHandler(this.OnScrollViewerDropEvent));
+            this.allDayAreaScrollViewer.RemoveHandler(UIElement.DragOverEvent, new DragEventHandler(this.OnScrollViewerDragOverEvent));
         }
 
         protected internal override void AttachUI(Panel parent)
         {
             base.AttachUI(parent);
             this.allDayAreaScrollViewer.ViewChanged += this.OnAllDayAreaScrollViewerViewChanged;
+            this.allDayAreaScrollViewer.AddHandler(UIElement.DropEvent, new DragEventHandler(this.OnScrollViewerDropEvent), true);
+            this.allDayAreaScrollViewer.AddHandler(UIElement.DragOverEvent, new DragEventHandler(this.OnScrollViewerDragOverEvent), true);
+        }
+
+        private void OnScrollViewerDragOverEvent(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
+            // Check if needed
+            e.DragUIOverride.IsCaptionVisible = false;
+            e.DragUIOverride.IsGlyphVisible = false;
+        }
+
+        private void OnScrollViewerDropEvent(object sender, DragEventArgs e)
+        {
+            var properties = e.DataView.Properties;
+            object info;
+            object hitPoint;
+            if (properties.TryGetValue("AppointmentInfo", out info) && properties.TryGetValue("HitPoint", out hitPoint))
+            {
+                var droppedPosition = e.GetPosition(this.allDayAreaPanel);
+                var pointFromAppointment = (Point)hitPoint;
+                droppedPosition.Y -= pointFromAppointment.Y;
+                var hitTestService = this.Owner.hitTestService;
+                var dateTime = hitTestService.GetDateFromPoint(droppedPosition);
+                var dateTimeAppointment = ((CalendarAppointmentInfo)info).childAppointment as DateTimeAppointment;
+                if (dateTime.HasValue && dateTimeAppointment != null)
+                {
+                    var startDate = dateTime.Value;
+                    var appointmentInfo = (CalendarAppointmentInfo)info;
+                    var appDuration = appointmentInfo.ChildAppointment.EndDate - appointmentInfo.ChildAppointment.StartDate;
+
+                    var startTime = dateTime.Value.Date.Add(dateTimeAppointment.StartDate.TimeOfDay);
+                    dateTimeAppointment.StartDate = startTime;
+                    dateTimeAppointment.EndDate = startTime.AddMilliseconds(appDuration.TotalMilliseconds);
+                    if (!dateTimeAppointment.IsAllDay)
+                    {
+                        dateTimeAppointment.IsAllDay = true;
+                    }
+                }
+            }
         }
 
         protected internal override void AddVisualChild(UIElement child)
@@ -225,9 +267,27 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             AppointmentControl appointmentControl = new AppointmentControl();
             appointmentControl.calendar = this.Owner;
+            appointmentControl.CanDrag = true;
+            appointmentControl.DragStarting += AppointmentControl_DragStarting;
             this.AddVisualChild(appointmentControl);
 
             return appointmentControl;
+        }
+
+        private void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            AppointmentControl appControl = (AppointmentControl)sender;
+            CalendarAppointmentInfo appInfo = appControl.appointmentInfo;
+            if (appInfo != null)
+            {
+                var initialDragPoint = args.GetPosition(appControl);
+                args.Data.Properties.Add("AppointmentInfo", appInfo);
+
+                var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
+                initialDragPoint.Y /= scale;
+                initialDragPoint.X /= scale;
+                args.Data.Properties.Add("HitPoint", initialDragPoint);
+            }
         }
 
         private void RecycleAppointments(IEnumerable<AppointmentControl> realizedPresenters)

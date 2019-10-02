@@ -152,6 +152,21 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
 
         }
 
+        internal DateTime? GetDateFromPoint(Point hitPoint)
+        {
+            var calendar = this.Owner;
+            var model = calendar.Model;
+            var cellModels = model.CalendarCells;
+
+            var calendarCellIndex = HitTestService.GetCellIndexFromPoint(hitPoint, cellModels);
+            var multiDayViewSettings = calendar.MultiDayViewSettings;
+            var visibleDays = multiDayViewSettings.VisibleDays;
+            var realIndex = calendarCellIndex + visibleDays;
+            var calendarCell = cellModels[realIndex];
+
+            return calendarCell.Date;
+        }
+
         private static bool IsDateBetweenRange(DateTime date, DateTime start, DateTime end)
         {
             if (date < start)

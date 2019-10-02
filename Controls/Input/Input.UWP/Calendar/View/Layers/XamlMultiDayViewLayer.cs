@@ -1178,6 +1178,11 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
 
                     dateTimeAppointment.StartDate = startDate;
                     dateTimeAppointment.EndDate = startDate.AddMilliseconds(appDuration.TotalMilliseconds);
+
+                    if (dateTimeAppointment.IsAllDay)
+                    {
+                        dateTimeAppointment.IsAllDay = false;
+                    }
                 }
             }
         }
