@@ -31,6 +31,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             this.allDayAreaPanel.VerticalAlignment = VerticalAlignment.Top;
             this.allDayAreaScrollViewer = new ScrollViewer();
             this.allDayAreaScrollViewer.Content = this.allDayAreaPanel;
+            this.allDayAreaScrollViewer.AllowDrop = true;
 
             this.realizedAppointmentPresenters = new Dictionary<CalendarAppointmentInfo, AppointmentControl>();
             this.visibleAppointmentPresenters = new Dictionary<CalendarAppointmentInfo, AppointmentControl>();
@@ -151,18 +152,14 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             var properties = e.DataView.Properties;
             object info;
-            object hitPoint;
-            if (properties.TryGetValue("AppointmentInfo", out info) && properties.TryGetValue("HitPoint", out hitPoint))
+            if (properties.TryGetValue("AppointmentInfo", out info))
             {
-                var droppedPosition = e.GetPosition(this.allDayAreaPanel);
-                var pointFromAppointment = (Point)hitPoint;
-                droppedPosition.Y -= pointFromAppointment.Y;
+                var droppedPosition = e.GetPosition(this.allDayAreaScrollViewer);
                 var hitTestService = this.Owner.hitTestService;
                 var dateTime = hitTestService.GetDateFromPoint(droppedPosition);
                 var dateTimeAppointment = ((CalendarAppointmentInfo)info).childAppointment as DateTimeAppointment;
                 if (dateTime.HasValue && dateTimeAppointment != null)
                 {
-                    var startDate = dateTime.Value;
                     var appointmentInfo = (CalendarAppointmentInfo)info;
                     var appDuration = appointmentInfo.ChildAppointment.EndDate - appointmentInfo.ChildAppointment.StartDate;
 

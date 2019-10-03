@@ -161,7 +161,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             var calendarCellIndex = HitTestService.GetCellIndexFromPoint(hitPoint, cellModels);
             var multiDayViewSettings = calendar.MultiDayViewSettings;
             var visibleDays = multiDayViewSettings.VisibleDays;
-            var realIndex = calendarCellIndex + visibleDays;
+            var realIndex = calendarCellIndex;
             var calendarCell = cellModels[realIndex];
 
             return calendarCell.Date;
