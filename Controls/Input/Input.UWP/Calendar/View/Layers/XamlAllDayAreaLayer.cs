@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Telerik.Core;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Telerik.UI.Xaml.Controls.Input.Calendar
 {
@@ -151,17 +153,17 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         private void OnScrollViewerDropEvent(object sender, DragEventArgs e)
         {
             var properties = e.DataView.Properties;
-            object info;
-            if (properties.TryGetValue("AppointmentInfo", out info))
+            object appControl;
+            if (properties.TryGetValue("AppointmentControl", out appControl))
             {
                 var droppedPosition = e.GetPosition(this.allDayAreaScrollViewer);
                 var hitTestService = this.Owner.hitTestService;
                 var dateTime = hitTestService.GetDateFromPoint(droppedPosition);
-                var dateTimeAppointment = ((CalendarAppointmentInfo)info).childAppointment as DateTimeAppointment;
+                var info = ((AppointmentControl)appControl).appointmentInfo;
+                var dateTimeAppointment = info.childAppointment as DateTimeAppointment;
                 if (dateTime.HasValue && dateTimeAppointment != null)
                 {
-                    var appointmentInfo = (CalendarAppointmentInfo)info;
-                    var appDuration = appointmentInfo.ChildAppointment.EndDate - appointmentInfo.ChildAppointment.StartDate;
+                    var appDuration = info.ChildAppointment.EndDate - info.ChildAppointment.StartDate;
 
                     var startTime = dateTime.Value.Date.Add(dateTimeAppointment.StartDate.TimeOfDay);
                     dateTimeAppointment.StartDate = startTime;
@@ -171,6 +173,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                         dateTimeAppointment.IsAllDay = true;
                     }
                 }
+                
+                ((AppointmentControl)appControl).Opacity = ((AppointmentControl)appControl).opacityCache;
             }
         }
 
@@ -271,20 +275,30 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             return appointmentControl;
         }
 
-        private void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             AppointmentControl appControl = (AppointmentControl)sender;
-            CalendarAppointmentInfo appInfo = appControl.appointmentInfo;
-            if (appInfo != null)
-            {
-                var initialDragPoint = args.GetPosition(appControl);
-                args.Data.Properties.Add("AppointmentInfo", appInfo);
+            args.Data.Properties.Add("AppointmentControl", appControl);
 
-                var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
-                initialDragPoint.Y /= scale;
-                initialDragPoint.X /= scale;
-                args.Data.Properties.Add("HitPoint", initialDragPoint);
-            }
+            var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
+            var initialDragPoint = args.GetPosition(appControl);
+            initialDragPoint.Y /= scale;
+            initialDragPoint.X /= scale;
+            args.Data.Properties.Add("HitPoint", initialDragPoint);
+
+            var renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync(appControl);
+
+            var buffer = await renderTargetBitmap.GetPixelsAsync();
+            var bitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer,
+                BitmapPixelFormat.Bgra8,
+                renderTargetBitmap.PixelWidth,
+                renderTargetBitmap.PixelHeight,
+                BitmapAlphaMode.Premultiplied);
+            args.DragUI.SetContentFromSoftwareBitmap(bitmap);
+
+            appControl.opacityCache = appControl.Opacity;
+            appControl.Opacity = 0.6;
         }
 
         private void RecycleAppointments(IEnumerable<AppointmentControl> realizedPresenters)

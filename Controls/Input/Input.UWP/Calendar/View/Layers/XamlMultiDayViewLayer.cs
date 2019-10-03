@@ -1080,32 +1080,32 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             return appointmentControl;
         }
 
-        private void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void AppointmentControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             AppointmentControl appControl = (AppointmentControl)sender;
-            CalendarAppointmentInfo appInfo = appControl.appointmentInfo;
-            if (appInfo != null)
-            {
-                var initialDragPoint = args.GetPosition(appControl);
-                args.Data.Properties.Add("AppointmentInfo", appInfo);
+            args.Data.Properties.Add("AppointmentControl", appControl);
 
-                var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
-                initialDragPoint.Y /= scale;
-                initialDragPoint.X /= scale;
-                args.Data.Properties.Add("HitPoint", initialDragPoint);
+            var pointFromAppointment = args.GetPosition(appControl);
+            var scale = (double)Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ResolutionScale / 100;
+            pointFromAppointment.Y /= scale;
+            pointFromAppointment.X /= scale;
+            args.Data.Properties.Add("HitPoint", pointFromAppointment);
 
-                //args.AllowedOperations = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
-                //var renderTargetBitmap = new RenderTargetBitmap();
-                //await renderTargetBitmap.RenderAsync(appControl);
+            var renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync( appControl);
 
-                //var buffer = await renderTargetBitmap.GetPixelsAsync();
-                //var bitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer,
-                //    BitmapPixelFormat.Bgra8,
-                //    renderTargetBitmap.PixelWidth,
-                //    renderTargetBitmap.PixelHeight,
-                //    BitmapAlphaMode.Premultiplied);
-                //args.DragUI.SetContentFromSoftwareBitmap(bitmap);
-            }
+            var buffer = await renderTargetBitmap.GetPixelsAsync();
+            var bitmap = SoftwareBitmap.CreateCopyFromBuffer(buffer,
+                BitmapPixelFormat.Bgra8,
+                renderTargetBitmap.PixelWidth,
+                renderTargetBitmap.PixelHeight,
+                BitmapAlphaMode.Premultiplied);
+            args.DragUI.SetContentFromSoftwareBitmap(bitmap);
+
+            var appointmentInfo = appControl.appointmentInfo;
+            appointmentInfo.hasNextDay
+            appControl.opacityCache = appControl.Opacity;
+            appControl.Opacity = 0.6;
         }
 
         private SlotControl CreateSlotVisual()
@@ -1160,21 +1160,21 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         private void OnScrollViewerDropEvent(object sender, DragEventArgs e)
         {
             var properties = e.DataView.Properties;
-            object info;
-            object hitPoint;
-            if (properties.TryGetValue("AppointmentInfo", out info) && properties.TryGetValue("HitPoint", out hitPoint))
+            object appControl;
+            object pointFromAppointment;
+            if (properties.TryGetValue("AppointmentControl", out appControl) && properties.TryGetValue("HitPoint", out pointFromAppointment))
             {
                 var droppedPosition = e.GetPosition(this.contentPanel);
-                var pointFromAppointment = (Point)hitPoint;
-                droppedPosition.Y -= pointFromAppointment.Y;
+                droppedPosition.Y -= ((Point)pointFromAppointment).Y;
+
                 var hitTestService = this.Owner.hitTestService;
                 var dateTime = hitTestService.GetDateTimeFromPoint(droppedPosition);
-                var dateTimeAppointment = ((CalendarAppointmentInfo)info).childAppointment as DateTimeAppointment;
+                var appInfo = ((AppointmentControl)appControl).appointmentInfo;
+                var dateTimeAppointment = appInfo.childAppointment as DateTimeAppointment;
                 if (dateTime.HasValue && dateTimeAppointment != null)
                 {
                     var startDate = dateTime.Value;
-                    var appointmentInfo = (CalendarAppointmentInfo)info;
-                    var appDuration = appointmentInfo.ChildAppointment.EndDate - appointmentInfo.ChildAppointment.StartDate;
+                    var appDuration = appInfo.ChildAppointment.EndDate - appInfo.ChildAppointment.StartDate;
 
                     dateTimeAppointment.StartDate = startDate;
                     dateTimeAppointment.EndDate = startDate.AddMilliseconds(appDuration.TotalMilliseconds);
@@ -1184,6 +1184,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                         dateTimeAppointment.IsAllDay = false;
                     }
                 }
+
+                ((AppointmentControl)appControl).Opacity = ((AppointmentControl)appControl).opacityCache;
             }
         }
 

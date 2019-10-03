@@ -29,6 +29,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
 
         internal RadCalendar calendar;
         internal CalendarAppointmentInfo appointmentInfo;
+        internal double opacityCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppointmentControl"/> class.
