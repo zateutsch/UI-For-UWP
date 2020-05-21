@@ -17,6 +17,7 @@
     <Example DisplayName="Configurations" ClassName="SDKExamples.UWP.BusyIndicator.Configurations" />
   </Control>
   <Control Name="Calendar">
+    <Example DisplayName="AgandaView" ClassName="SDKExamples.UWP.Calendar.AgendaView" />
     <Example DisplayName="Remove Animation on Navigation" ClassName="SDKExamples.UWP.Calendar.RemoveNavigationAnimations" />
     <Example DisplayName="Change First Day of Week and Week Rule" ClassName="SDKExamples.UWP.Calendar.FirstDayOfWeek_and_WeekRule" />
     <Example DisplayName="Custom Event Information" ClassName="SDKExamples.UWP.Calendar.CustomEventInformation" />

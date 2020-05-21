@@ -33,6 +33,11 @@ namespace Telerik.UI.Xaml.Controls.Input
                 navigationStep = this.MultiDayViewSettings.VisibleDays;
             }
 
+            if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+            {
+                navigationStep = this.AgendaViewSettings.VisibleDays;
+            }
+
             this.RaiseMoveToPreviousViewCommand(navigationStep);
         }
 
@@ -46,6 +51,11 @@ namespace Telerik.UI.Xaml.Controls.Input
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
             {
                 navigationStep = this.MultiDayViewSettings.VisibleDays;
+            }
+
+            if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+            {
+                navigationStep = this.AgendaViewSettings.VisibleDays;
             }
 
             this.RaiseMoveToNextViewCommand(navigationStep);
@@ -94,13 +104,16 @@ namespace Telerik.UI.Xaml.Controls.Input
         internal void RaiseMoveToPreviousViewCommand(int navigatioStep)
         {
             CalendarViewChangeContext context = new CalendarViewChangeContext();
-            if (this.displayModeCache != CalendarDisplayMode.MultiDayView)
+            if (this.displayModeCache != CalendarDisplayMode.AgendaView)
             {
-                context.AnimationStoryboard = this.CreateMoveToPreviousViewAnimationStoryboard();
-            }
-            else
-            {
-                context.weekendsVisible = this.MultiDayViewSettings.WeekendsVisible;
+                if (this.displayModeCache != CalendarDisplayMode.MultiDayView)
+                {
+                    context.AnimationStoryboard = this.CreateMoveToPreviousViewAnimationStoryboard();
+                }
+                else
+                {
+                    context.weekendsVisible = this.MultiDayViewSettings.WeekendsVisible;
+                }
             }
 
             context.navigationStep = navigatioStep;
@@ -110,15 +123,17 @@ namespace Telerik.UI.Xaml.Controls.Input
         internal void RaiseMoveToNextViewCommand(int navigatioStep)
         {
             CalendarViewChangeContext context = new CalendarViewChangeContext();
-            if (this.displayModeCache != CalendarDisplayMode.MultiDayView)
+            if (this.displayModeCache != CalendarDisplayMode.AgendaView)
             {
-                context.AnimationStoryboard = this.CreateMoveToNextViewAnimationStoryboard();
+                if (this.displayModeCache != CalendarDisplayMode.MultiDayView)
+                {
+                    context.AnimationStoryboard = this.CreateMoveToNextViewAnimationStoryboard();
+                }
+                else
+                {
+                    context.weekendsVisible = this.MultiDayViewSettings.WeekendsVisible;
+                }
             }
-            else
-            {
-                context.weekendsVisible = this.MultiDayViewSettings.WeekendsVisible;
-            }
-
             context.navigationStep = navigatioStep;
             this.CommandService.ExecuteCommand(CommandId.MoveToNextView, context);
         }

@@ -213,7 +213,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                 this.headerPresenter.PointerCaptureLost += this.OnHeaderPresenterPointerCaptureLost;
             }
 
-            if (this.Owner.DisplayMode == CalendarDisplayMode.MultiDayView)
+            var displayMode = this.Owner.DisplayMode;
+            if (displayMode == CalendarDisplayMode.MultiDayView || displayMode == CalendarDisplayMode.AgendaView)
             {
                 if (this.previousButton != null && this.nextButton != null)
                 {
@@ -265,9 +266,14 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             if (calendar != null)
             {
                 int navigationStep = 1;
+                var displayMode = calendar.DisplayMode;
                 if (calendar.DisplayMode == CalendarDisplayMode.MultiDayView)
                 {
                     navigationStep = calendar.MultiDayViewSettings.VisibleDays;
+                }
+                else if (displayMode == CalendarDisplayMode.AgendaView)
+                {
+                    navigationStep = calendar.AgendaViewSettings.VisibleDays;
                 }
 
                 calendar.RaiseMoveToNextViewCommand(navigationStep);
@@ -280,9 +286,14 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             if (calendar != null)
             {
                 int navigationStep = 1;
-                if (calendar.DisplayMode == CalendarDisplayMode.MultiDayView)
+                var displayMode = calendar.DisplayMode;
+                if (displayMode == CalendarDisplayMode.MultiDayView)
                 {
                     navigationStep = calendar.MultiDayViewSettings.VisibleDays;
+                }
+                else if (displayMode == CalendarDisplayMode.AgendaView)
+                {
+                    navigationStep = calendar.AgendaViewSettings.VisibleDays;
                 }
 
                 this.Owner.RaiseMoveToPreviousViewCommand(navigationStep);

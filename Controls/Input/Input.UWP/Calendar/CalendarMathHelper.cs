@@ -130,6 +130,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                     return CalendarMathHelper.GetFirstDateOfCentury(displayDate) != CalendarMathHelper.GetFirstDateOfCentury(newDisplayDate);
                 case CalendarDisplayMode.MultiDayView:
                     return displayDate != newDisplayDate;
+                case CalendarDisplayMode.AgendaView:
+                    return displayDate != newDisplayDate;
                 default:
                     return CalendarMathHelper.GetFirstDateOfMonth(displayDate) != CalendarMathHelper.GetFirstDateOfMonth(newDisplayDate);
             }
@@ -158,6 +160,10 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                     }
 
                     return date;
+                case CalendarDisplayMode.AgendaView:
+                    return date.Year == DateTime.MinValue.Year && date.Month == DateTime.MinValue.Month && date.Day - increment < 0
+                            || date.Year == DateTime.MaxValue.Year && date.Month == DateTime.MaxValue.Month && date.Day + increment > 31
+                            ? date : date.AddDays(increment);
                 default:
                     return date.Year == DateTime.MinValue.Year && date.Month == DateTime.MinValue.Month && increment < 0 
                         || date.Year == DateTime.MaxValue.Year && date.Month == DateTime.MaxValue.Month && increment > 0

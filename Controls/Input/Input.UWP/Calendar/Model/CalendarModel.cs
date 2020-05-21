@@ -39,11 +39,13 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         internal CalendarDecadeViewModel decadeViewModel;
         internal CalendarCenturyViewModel centuryViewModel;
         internal CalendarMultiDayViewModel multiDayViewModel;
+        internal CalendarAgendaViewModel agendaViewModel;
 
         internal CalendarViewModel currentViewModel;
 
         internal AppointmentSource appointmentSource;
         internal MultiDayViewSettings multiDayViewSettings;
+        internal AgendaViewSettings agendaViewSettings;
 
         public CalendarModel(IView calendar)
         {
@@ -67,6 +69,9 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
 
             this.centuryViewModel = new CalendarCenturyViewModel();
             this.children.Add(this.centuryViewModel);
+
+            this.agendaViewModel = new CalendarAgendaViewModel();
+            this.children.Add(this.agendaViewModel);
 
             this.UpdateCurrentView();
         }
@@ -257,6 +262,11 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             get
             {
+                if (this.DisplayMode == CalendarDisplayMode.AgendaView)
+                {
+                    return null;
+                }
+
                 return this.currentViewModel.CalendarCells;
             }
         }
@@ -312,6 +322,11 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             get
             {
+                if (this.DisplayMode == CalendarDisplayMode.AgendaView)
+                {
+                    return null;
+                }
+
                 return this.currentViewModel.CalendarDecorations;
             }
         }
@@ -423,7 +438,7 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             date = date.Date;
             DateTime firstDateToRender = date;
 
-            if (displayMode == CalendarDisplayMode.MultiDayView)
+            if (displayMode == CalendarDisplayMode.MultiDayView || displayMode == CalendarDisplayMode.AgendaView)
             {
                 DayOfWeek firstDayOfWeek = this.GetFirstDayOfWeek();
                 DateTime firstDateOfCurrentWeek = CalendarMathHelper.GetFirstDayOfCurrentWeek(date, firstDayOfWeek);
@@ -433,13 +448,20 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                     firstDateToRender = firstDateOfCurrentWeek;
                 }
 
-                if (!this.multiDayViewSettings.WeekendsVisible)
+                if (displayMode == CalendarDisplayMode.MultiDayView)
                 {
-                    firstDateToRender = CalendarMathHelper.AddBusinessDays(date, -this.multiDayViewSettings.VisibleDays);
+                    if (!this.multiDayViewSettings.WeekendsVisible)
+                    {
+                        firstDateToRender = CalendarMathHelper.AddBusinessDays(date, -this.multiDayViewSettings.VisibleDays);
+                    }
+                    else
+                    {
+                        firstDateToRender = date.AddDays(-this.multiDayViewSettings.VisibleDays);
+                    }
                 }
                 else
                 {
-                    firstDateToRender = date.AddDays(-this.multiDayViewSettings.VisibleDays);
+                    firstDateToRender = date.AddDays(-this.agendaViewSettings.VisibleDays);
                 }
             }
             else if (displayMode == CalendarDisplayMode.MonthView)
@@ -487,6 +509,9 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                     break;
                 case CalendarDisplayMode.MultiDayView:
                     this.currentViewModel = this.multiDayViewModel;
+                    break;
+                case CalendarDisplayMode.AgendaView:
+                    this.currentViewModel = this.agendaViewModel;
                     break;
                 default:
                     this.currentViewModel = this.monthViewModel;

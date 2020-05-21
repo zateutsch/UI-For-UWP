@@ -28,6 +28,8 @@
         /// <summary>
         /// This view represents a single or up to seven days in a week.
         /// </summary>
-        MultiDayView
+        MultiDayView,
+
+        AgendaView
     }
 }
