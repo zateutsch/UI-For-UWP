@@ -74,6 +74,7 @@
     <Compile Include="Calendar\Model\Slot.cs" />
     <Compile Include="Calendar\View\AgendaView\AgendaViewSettings.cs" />
     <Compile Include="Calendar\View\CalendarFooterControl.cs" />
+    <Compile Include="Calendar\View\Layers\XamlAgendaViewLayer.cs" />
     <Compile Include="Calendar\View\Layers\XamlAllDayAreaLayer.cs" />
     <Compile Include="Calendar\View\Layers\XamlMultiDayViewLayer.cs" />
     <Compile Include="Calendar\View\MultiDayView\MultiDayViewSettings.cs" />

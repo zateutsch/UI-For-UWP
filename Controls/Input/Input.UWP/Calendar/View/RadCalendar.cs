@@ -331,6 +331,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         internal XamlVisualStateLayer visualStateLayer;
         internal XamlDecorationLayer decorationLayer;
         internal XamlContentLayer contentLayer;
+        internal XamlAgendaViewLayer agendaLayer;
         internal XamlAppointmentLayer appointmentLayer;
         internal XamlMultiDayViewLayer timeRulerLayer;
         internal XamlAllDayAreaLayer allDayAreaLayer;
@@ -1976,6 +1977,11 @@ namespace Telerik.UI.Xaml.Controls.Input
 
             if (sender == this.AppointmentSource.AllAppointments)
             {
+                if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+                {
+                    this.Invalidate();
+                }
+                
                 this.MultiDayViewSettings.Invalidate(MultiDayViewUpdateFlag.AffectsAppointments);
             }
         }
@@ -1989,6 +1995,11 @@ namespace Telerik.UI.Xaml.Controls.Input
         {
             if (sender is IAppointment)
             {
+                if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+                {
+                    this.Invalidate();
+                }
+
                 this.MultiDayViewSettings.Invalidate(MultiDayViewUpdateFlag.AffectsAppointments);
             }
         }
@@ -2427,9 +2438,9 @@ namespace Telerik.UI.Xaml.Controls.Input
                 this.defaultHighlightedCellStyle = (CalendarCellStyle)RadCalendar.MultiDayViewResources[DefaultHighlightedCellStyleName];
             }
 
-            if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+            if (this.agendaLayer == null)
             {
-                return;
+                this.agendaLayer = new XamlAgendaViewLayer();
             }
 
             if (this.timeRulerLayer == null)
@@ -2437,15 +2448,46 @@ namespace Telerik.UI.Xaml.Controls.Input
                 this.timeRulerLayer = new XamlMultiDayViewLayer();
             }
 
+            if (this.decorationLayer == null)
+            {
+                this.decorationLayer = new XamlDecorationLayer();
+            }
+
+            if (this.visualStateLayer == null)
+            {
+                this.visualStateLayer = new XamlVisualStateLayer();
+            }
+
+            if (this.headerContentLayer == null)
+            {
+                this.headerContentLayer = new XamlHeaderContentLayer();
+            }
+
+            if (this.contentLayer == null)
+            {
+                this.contentLayer = new XamlContentLayer();
+            }
+
+            if (this.allDayAreaLayer == null)
+            {
+                this.allDayAreaLayer = new XamlAllDayAreaLayer();
+            }
+
+            if (this.appointmentLayer == null)
+            {
+                this.appointmentLayer = new XamlAppointmentLayer();
+            }
+
+            if (this.displayModeCache == CalendarDisplayMode.AgendaView)
+            {
+                this.AddLayer(this.agendaLayer, this.calendarViewHost);
+                return;
+            }
+
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
             {
                 this.inputService.AttachToTimeRulerPanel(this.timeRulerLayer.contentPanel);
                 this.AddLayer(this.timeRulerLayer, this.calendarViewHost);
-            }
-
-            if (this.decorationLayer == null)
-            {
-                this.decorationLayer = new XamlDecorationLayer();
             }
 
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
@@ -2457,17 +2499,7 @@ namespace Telerik.UI.Xaml.Controls.Input
                 this.AddLayer(this.decorationLayer, this.calendarViewHost);
             }
 
-            if (this.visualStateLayer == null)
-            {
-                this.visualStateLayer = new XamlVisualStateLayer();
-            }
-
             this.AddLayer(this.visualStateLayer, this.decorationLayer.VisualContainer);
-
-            if (this.headerContentLayer == null)
-            {
-                this.headerContentLayer = new XamlHeaderContentLayer();
-            }
 
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
             {
@@ -2476,11 +2508,6 @@ namespace Telerik.UI.Xaml.Controls.Input
             else
             {
                 this.AddLayer(this.headerContentLayer, this.calendarViewHost);
-            }
-
-            if (this.contentLayer == null)
-            {
-                this.contentLayer = new XamlContentLayer();
             }
 
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
@@ -2493,19 +2520,9 @@ namespace Telerik.UI.Xaml.Controls.Input
                 this.AddLayer(this.contentLayer, this.calendarViewHost);
             }
 
-            if (this.allDayAreaLayer == null)
-            {
-                this.allDayAreaLayer = new XamlAllDayAreaLayer();
-            }
-
             if (this.displayModeCache == CalendarDisplayMode.MultiDayView)
             {
                 this.AddLayer(this.allDayAreaLayer, this.timeRulerLayer.topHeader);
-            }
-
-            if (this.appointmentLayer == null)
-            {
-                this.appointmentLayer = new XamlAppointmentLayer();
             }
 
             this.AddLayer(this.appointmentLayer, this.contentLayer.AnimatableContainer);
@@ -2576,10 +2593,9 @@ namespace Telerik.UI.Xaml.Controls.Input
                 // NOTE: We need to set the size explicitly so animation works correctly.
                 this.contentLayer.AnimatableContainer.Width = this.availableCalendarViewSize.Width;
                 this.contentLayer.AnimatableContainer.Height = this.availableCalendarViewSize.Height;
-
-                this.CallUpdateUI();
             }
-           
+
+            this.CallUpdateUI();
             this.arrangePassed = true;
 
             return finalSize;
@@ -2836,6 +2852,10 @@ namespace Telerik.UI.Xaml.Controls.Input
                 {
                     calendar.MultiDayViewSettings.Invalidate(MultiDayViewUpdateFlag.AffectsAppointments);
                 }
+            }
+            else
+            {
+                calendar.Invalidate();
             }
 
             INotifyCollectionChanged oldAppSource = ((AppointmentSource)e.OldValue)?.AllAppointments;
@@ -3189,11 +3209,13 @@ namespace Telerik.UI.Xaml.Controls.Input
             RadCalendar.RemoveLayer(this.allDayAreaLayer, this.calendarViewHost);
             RadCalendar.RemoveLayer(this.timeRulerLayer, this.calendarViewHost);
             RadCalendar.RemoveLayer(this.appointmentLayer, this.calendarViewHost);
+            
             this.UnloadMultiDayView();
 
             var agendaViewSettings = this.AgendaViewSettings;
             if (agendaViewSettings != null)
             {
+                RadCalendar.RemoveLayer(this.agendaLayer, this.calendarViewHost);
                 agendaViewSettings.owner = null;
             }
         }
@@ -3221,9 +3243,13 @@ namespace Telerik.UI.Xaml.Controls.Input
                 RadCalendar.RemoveLayer(this.contentLayer, this.calendarViewHost);
                 RadCalendar.RemoveLayer(this.appointmentLayer, this.calendarViewHost);
                 RadCalendar.RemoveLayer(this.visualStateLayer, this.calendarViewHost);
+
+                this.AddLayer(this.agendaLayer, this.calendarViewHost);
             }
             else if (oldValue == CalendarDisplayMode.AgendaView)
             {
+                RadCalendar.RemoveLayer(this.agendaLayer, this.calendarViewHost);
+
                 this.AddLayer(this.decorationLayer, this.calendarViewHost);
                 this.AddLayer(this.headerContentLayer, this.calendarViewHost);
                 this.AddLayer(this.contentLayer, this.calendarViewHost);
@@ -3498,6 +3524,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         {
             if (this.displayModeCache == CalendarDisplayMode.AgendaView)
             {
+                this.agendaLayer.UpdateUI();
                 return;
             }
 

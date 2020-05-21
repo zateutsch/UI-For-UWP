@@ -16,7 +16,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding Title, ElementName=page}" Style="{StaticResource ExampleHeaderTextBlockStyle}" />
-        <input:RadCalendar Grid.Row="1"
+        <input:RadCalendar x:Name="calendar"
+                           Grid.Row="1"
                            DisplayMode="AgendaView"/>
     </Grid>
 </local:ExamplePageBase>

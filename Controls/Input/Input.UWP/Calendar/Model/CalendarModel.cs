@@ -437,8 +437,11 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         {
             date = date.Date;
             DateTime firstDateToRender = date;
-
-            if (displayMode == CalendarDisplayMode.MultiDayView || displayMode == CalendarDisplayMode.AgendaView)
+            if(displayMode == CalendarDisplayMode.AgendaView)
+            {
+                return firstDateToRender;
+            }
+            else if (displayMode == CalendarDisplayMode.MultiDayView)
             {
                 DayOfWeek firstDayOfWeek = this.GetFirstDayOfWeek();
                 DateTime firstDateOfCurrentWeek = CalendarMathHelper.GetFirstDayOfCurrentWeek(date, firstDayOfWeek);
@@ -448,20 +451,13 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
                     firstDateToRender = firstDateOfCurrentWeek;
                 }
 
-                if (displayMode == CalendarDisplayMode.MultiDayView)
+                if (!this.multiDayViewSettings.WeekendsVisible)
                 {
-                    if (!this.multiDayViewSettings.WeekendsVisible)
-                    {
-                        firstDateToRender = CalendarMathHelper.AddBusinessDays(date, -this.multiDayViewSettings.VisibleDays);
-                    }
-                    else
-                    {
-                        firstDateToRender = date.AddDays(-this.multiDayViewSettings.VisibleDays);
-                    }
+                    firstDateToRender = CalendarMathHelper.AddBusinessDays(date, -this.multiDayViewSettings.VisibleDays);
                 }
                 else
                 {
-                    firstDateToRender = date.AddDays(-this.agendaViewSettings.VisibleDays);
+                    firstDateToRender = date.AddDays(-this.multiDayViewSettings.VisibleDays);
                 }
             }
             else if (displayMode == CalendarDisplayMode.MonthView)
