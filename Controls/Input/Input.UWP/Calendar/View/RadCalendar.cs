@@ -323,6 +323,7 @@ namespace Telerik.UI.Xaml.Controls.Input
 
         internal static readonly Size InfinitySize = new Size(double.PositiveInfinity, double.PositiveInfinity);
         internal static ResourceDictionary MultiDayViewResources;
+        internal static ResourceDictionary AgendaViewResources;
 
         internal readonly VisualStateService VisualStateService;
         internal readonly SelectionService SelectionService;
@@ -399,6 +400,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         static RadCalendar()
         {
             RadCalendar.MultiDayViewResources = ResourceHelper.GetResourceDictionaryByPath(typeof(RadCalendar), "Telerik.UI.Xaml.Controls.Input.Themes.DefaultCalendarTimerRulerResources.xaml");
+            RadCalendar.AgendaViewResources = ResourceHelper.GetResourceDictionaryByPath(typeof(RadCalendar), "Telerik.UI.Xaml.Controls.Input.Themes.DefaultAgendaViewResources.xaml");
         }
 
         /// <summary>
@@ -3524,7 +3526,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         {
             if (this.displayModeCache == CalendarDisplayMode.AgendaView)
             {
-                this.agendaLayer.UpdateUI();
+                this.agendaLayer.UpdateUI(this.invalidateScheduled, this.availableCalendarViewSize);
                 return;
             }
 

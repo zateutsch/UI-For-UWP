@@ -74,12 +74,18 @@ namespace Telerik.UI.Automation.Peers
         /// <inheritdoc />
         protected override IList<AutomationPeer> GetChildrenCore()
         {
+            var cells = this.CalendarOwner.Model.currentViewModel.CalendarCells;
+            if (cells == null)
+            {
+                return null;
+            }
+
             List<AutomationPeer> children = new List<AutomationPeer>();
             RadCalendarAutomationPeer calendarPeer = FrameworkElementAutomationPeer.FromElement(this.CalendarOwner) as RadCalendarAutomationPeer;
 
             IList<AutomationPeer> textBlockPeers = this.GetTextBlockPeers();
 
-            foreach (CalendarCellModel cellModel in this.CalendarOwner.Model.currentViewModel.CalendarCells)
+            foreach (CalendarCellModel cellModel in cells)
             {
                 CalendarCellInfoBaseAutomationPeer peer = calendarPeer.childrenCache
                                 .OfType<CalendarCellInfoBaseAutomationPeer>().FirstOrDefault(a => this.AreModelsEqual(a.CellNode, cellModel));

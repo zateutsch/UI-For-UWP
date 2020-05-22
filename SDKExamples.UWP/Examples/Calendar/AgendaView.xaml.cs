@@ -19,7 +19,7 @@ namespace SDKExamples.UWP.Calendar
             int step = 5;
             Random rnd = new Random();
             Byte[] b = new Byte[3];
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 3000; i++)
             {
                 rnd.NextBytes(b);
                 DateTimeAppointment app = new DateTimeAppointment(today.AddHours(step + i), today.AddHours(step + step / 2 + i))

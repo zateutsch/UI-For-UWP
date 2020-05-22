@@ -1,0 +1,29 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Telerik.UI.Xaml.Controls.Input">
+    <local:AgendaItemTemplateSelector x:Key="AgendaItemTemplateSelector">
+        <local:AgendaItemTemplateSelector.DayItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Date}" FontSize="24"/>
+            </DataTemplate>
+        </local:AgendaItemTemplateSelector.DayItemTemplate>
+        <local:AgendaItemTemplateSelector.AppointmentItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="0, 0, 15, 0">
+                        <TextBlock Text="{Binding Appointment.StartDate}"/>
+                        <TextBlock Text="{Binding Appointment.EndDate}"/>
+                    </StackPanel>
+                    <Grid Grid.Column="1" Background="{Binding Appointment.Color}">
+                        <TextBlock Text="{Binding Appointment.Subject}" Foreground="White"/>
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+        </local:AgendaItemTemplateSelector.AppointmentItemTemplate>
+    </local:AgendaItemTemplateSelector>
+</ResourceDictionary>
