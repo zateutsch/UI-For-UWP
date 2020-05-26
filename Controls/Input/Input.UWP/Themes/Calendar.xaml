@@ -34,6 +34,29 @@
             <Setter.Value>
                 <ControlTemplate TargetType="localCalendar:AppointmentControl">
                     <Grid Background="{TemplateBinding Background}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Storyboard.TargetName="PART_TopResize">
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Visible</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed"/>
+                                <VisualState x:Name="Disabled"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="FocusStates">
+                                <VisualState x:Name="Focused"/>
+                                <VisualState x:Name="Unfocused"/>
+                                <VisualState x:Name="PointerFocused"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -60,6 +83,17 @@
                                    Foreground="{TemplateBinding IndicatorColor}"
                                    Padding="0, 4, 4, 0"
                                    Visibility="{TemplateBinding RightIndicatorVisibility}"/>
+                        <Grid x:Name="PART_TopResize"
+                              Grid.ColumnSpan="2"
+                              Visibility="Collapsed"
+                              Background="Red"
+                              CanDrag="True">
+                            <TextBlock Grid.ColumnSpan="2"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       Text="&#xE7EB;"
+                                       HorizontalAlignment="Center"/>
+                        </Grid>
+                        
                         <ContentPresenter Grid.Row="1" Grid.ColumnSpan="2"
                                           Content="{TemplateBinding Header}" 
                                           ContentTemplate="{TemplateBinding HeaderTemplate}"

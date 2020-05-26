@@ -1,4 +1,6 @@
-﻿using Windows.UI.Xaml;
+﻿using Windows.UI.Input;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -30,6 +32,8 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
         internal RadCalendar calendar;
         internal CalendarAppointmentInfo appointmentInfo;
         internal double opacityCache;
+
+        private UIElement topResize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppointmentControl"/> class.
@@ -94,6 +98,73 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             }
 
             base.OnTapped(e);
+        }
+
+        protected override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            this.topResize = this.GetTemplateChild("PART_TopResize") as UIElement;
+            this.topResize.PointerMoved += TopResize_PointerMoved;
+            this.topResize.PointerPressed += TopResize_PointerPressed;
+            this.topResize.PointerReleased += TopResize_PointerReleased;
+            this.topResize.PointerCaptureLost += TopResize_PointerCaptureLost;
+            this.topResize.DragStarting += TopResize_DragStarting;
+        }
+
+        private void TopResize_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.Cancel = true;
+        }
+
+        private void TopResize_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            this.startPoint = null;
+        }
+
+        private void TopResize_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            this.startPoint = null;
+            this.ReleasePointerCapture(e.Pointer);
+        }
+
+        private PointerPoint startPoint;
+        private void TopResize_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.IsInContact)
+            {
+                this.startPoint = e.GetCurrentPoint(this);
+                this.CapturePointer(e.Pointer);
+            }
+        }
+
+        private void TopResize_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (this.startPoint != null)
+            {
+                var currentPoint = e.GetCurrentPoint(this);
+                var change = this.startPoint.Position.Y - currentPoint.Position.Y;
+                if (change > 0)
+                {
+                    this.Height += change;
+                    var top = Canvas.GetTop(this);
+                    top -= change;
+                    Canvas.SetTop(this, top);
+                    this.startPoint = currentPoint;
+                }
+            }
+        }
+
+        protected override void OnPointerEntered(PointerRoutedEventArgs e)
+        {
+            base.OnPointerEntered(e);
+            VisualStateManager.GoToState(this, "PointerOver", false);
+        }
+
+        protected override void OnPointerExited(PointerRoutedEventArgs e)
+        {
+            base.OnPointerExited(e);
+            VisualStateManager.GoToState(this, "Normal", false);
         }
     }
 }
