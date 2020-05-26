@@ -350,7 +350,7 @@ namespace Telerik.UI.Xaml.Controls.Input
         private const string NavigationControlPanelName = "navigationControl";
         private const string FooterControlPanelName = "PART_FooterControl";
 
-        private readonly HitTestService hitTestService;
+        internal readonly HitTestService hitTestService;
         private readonly InputService inputService;
         private CommandService commandService;
 

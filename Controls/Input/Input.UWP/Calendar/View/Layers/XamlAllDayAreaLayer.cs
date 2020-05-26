@@ -316,21 +316,6 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
             this.recycledAppointments.Enqueue(visual);
         }
 
-        private void RecycleAppointments(IEnumerable<AppointmentControl> realizedPresenters)
-        {
-            foreach (AppointmentControl appControl in realizedPresenters)
-            {
-                appControl.Visibility = Visibility.Collapsed;
-                this.fullyRecycledAppointments.Enqueue(appControl);
-            }
-        }
-
-        private void RecycleAppointmentVisual(CalendarAppointmentInfo appointmentInfo, AppointmentControl visual)
-        {
-            this.realizedAppointmentPresenters.Remove(appointmentInfo);
-            this.recycledAppointments.Enqueue(visual);
-        }
-
         private void OnAllDayAreaScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             this.UpdateAllDayAreaUI();
