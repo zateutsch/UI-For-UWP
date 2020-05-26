@@ -59,6 +59,7 @@
     <Compile Include="AutoCompleteBox\AutomationPeers\RadAutoCompleteBoxAutomationPeer.cs" />
     <Compile Include="AutoCompleteBox\AutomationPeers\SuggestionItemAutomationPeer.cs" />
     <Compile Include="Calendar\AutomationPeers\CalendarCellInfoBaseAutomationPeer.cs" />
+    <Compile Include="Calendar\AutomationPeers\CalendarFooterControlAutomationPeer.cs" />
     <Compile Include="Calendar\AutomationPeers\CalendarHeaderCellInfoAutomationPeer.cs" />
     <Compile Include="Calendar\AutomationPeers\CalendarInvokableCellInfoAutomationPeer.cs" />
     <Compile Include="Calendar\AutomationPeers\CalendarNavigationControlAutomationPeer.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Calendar\Model\CalendarMultiDayViewModel.cs" />
     <Compile Include="Calendar\Model\ICopyable.cs" />
     <Compile Include="Calendar\Model\Slot.cs" />
+    <Compile Include="Calendar\View\CalendarFooterControl.cs" />
     <Compile Include="Calendar\View\Layers\XamlAllDayAreaLayer.cs" />
     <Compile Include="Calendar\View\Layers\XamlMultiDayViewLayer.cs" />
     <Compile Include="Calendar\View\MultiDayView\MultiDayViewSettings.cs" />
@@ -84,8 +86,10 @@
     <Compile Include="DateTimePicker\AutomationPeers\DateTimePickerButtonAutomationPeer.cs" />
     <Compile Include="DateTimePicker\AutomationPeers\RadDatePickerAutomationPeer.cs" />
     <Compile Include="DateTimePicker\AutomationPeers\RadTimePickerAutomationPeer.cs" />
+    <Compile Include="DateTimePicker\DateTimePickerUpdateValueTrigger.cs" />
     <Compile Include="NumericBox\AutomationPeers\NumericTextBoxAutomationPeer.cs" />
     <Compile Include="NumericBox\AutomationPeers\RadNumericBoxAutomationPeer.cs" />
+    <Compile Include="NumericBox\NumericBoxUpdateValueTrigger.cs" />
     <Compile Include="RangeSlider\RadRangeSlider.cs" />
     <Compile Include="RangeSlider\RadRangeSliderAutomationPeer.cs" />
     <Compile Include="RangeSlider\RangeSliderPanel.cs" />

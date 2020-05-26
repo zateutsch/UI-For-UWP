@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Telerik.Core;
 using Windows.Foundation;
-using Windows.Graphics.Imaging;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -1110,6 +1109,14 @@ namespace Telerik.UI.Xaml.Controls.Input.Calendar
 
         private SlotControl CreateSlotVisual()
         { 
+            SlotControl slot = new SlotControl();
+            this.AddVisualChild(slot);
+
+            return slot;
+        }
+
+        private SlotControl CreateSlotVisual()
+        {
             SlotControl slot = new SlotControl();
             this.AddVisualChild(slot);
 
