@@ -37,6 +37,7 @@ namespace Telerik.UI.Xaml.Controls.Chart
         private WeakEventHandler<IVectorChangedEventArgs> vectorChangedHandler;
         private IEnumerable sourceAsEnumerable;
         private ChartSeriesDescriptorSelector descriptorSelectorCache;
+        private int collectionIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChartSeriesProvider" /> class.
@@ -47,6 +48,7 @@ namespace Telerik.UI.Xaml.Controls.Chart
 
             this.descriptors = new ChartSeriesDescriptorCollection();
             this.descriptors.CollectionChanged += this.OnDescriptorsCollectionChanged;
+            this.collectionIndex = 0;
         }
 
         /// <summary>
@@ -280,13 +282,21 @@ namespace Telerik.UI.Xaml.Controls.Chart
                 return this.descriptorSelectorCache.SelectDescriptor(this, context);
             }
 
+            ChartSeriesDescriptor maxDescriptor = null;
+            int maxIndex = 0;
             foreach (ChartSeriesDescriptor descriptor in this.descriptors)
             {
                 // TODO: Consider caching-by-index if descriptor count goes above 10
-                if (descriptor.CollectionIndex == index)
+                if ((index >= descriptor.CollectionIndex) & (descriptor.CollectionIndex > maxIndex))
                 {
-                    return descriptor;
-                }
+                    maxDescriptor = descriptor;
+                    maxIndex = descriptor.CollectionIndex;
+                }       
+            }
+
+            if (maxDescriptor != null)
+            {
+                return maxDescriptor;
             }
 
             if (this.descriptors.Count > 0)
